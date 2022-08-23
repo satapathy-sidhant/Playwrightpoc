@@ -4,6 +4,8 @@ import com.microsoft.playwright.*;
 import org.testng.annotations.AfterClass;
 import org.testng.annotations.BeforeClass;
 
+import java.nio.file.Paths;
+
 public class CoreTest {
     protected Playwright driver;
     protected Browser chrome;
@@ -14,12 +16,17 @@ public class CoreTest {
     public void openBrowser() {
         driver = Playwright.create();
         chrome = driver.chromium().launch(new BrowserType.LaunchOptions().setHeadless(false).setSlowMo(1000));
-        incognitoTab = chrome.newContext(new Browser.NewContextOptions().setViewportSize(1620, 1080));
+        incognitoTab = chrome.newContext(new Browser.NewContextOptions().setViewportSize(1620, 1080).setRecordVideoDir(Paths.get("myvideos/")));
+        incognitoTab.tracing().start(new Tracing.StartOptions()
+            .setScreenshots(true)
+            .setSnapshots(true));
         browser = incognitoTab.newPage();
     }
 
     @AfterClass
     public void closeBrowser() {
+        incognitoTab.tracing().stop(new Tracing.StopOptions()
+            .setPath(Paths.get("trace.zip")));
         browser.close();
         incognitoTab.close();
         chrome.close();
@@ -71,3 +78,4 @@ public class CoreTest {
     }
 
 }
+
